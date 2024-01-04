@@ -8,20 +8,8 @@ interface UploadedAssetData {
   width: number;
   height: number;
   id: string;
-  info: UploadedAssetInfo;
-}
-
-interface UploadedAssetInfo {
-  detection: {
-    captioning: {
-      status: string;
-      data: {
-        caption: string;
-      };
-      model_version: number;
-      schema_version: number;
-    };
-  };
+  info: Record<string, unknown>;
+  context: Record<string, Record<string, string>>;
 }
 
 export default function Home() {
@@ -32,10 +20,11 @@ export default function Home() {
       <h1 className="text-5xl font-medium py-8">Image Upload App</h1>
       <section className="flex flex-col items-center justify-between">
         <CldUploadWidget
-          uploadPreset="next_cloudinary_app"
           signatureEndpoint="/api/sign-image"
           options={{
             detection: 'captioning',
+            on_success:
+              'current_asset.update({context: {alt: e.upload_info?.info?.detection?.captioning?.data?.caption}})',
           }}
           onSuccess={(result) => {
             setResult(result?.info as UploadedAssetData);
@@ -49,7 +38,7 @@ export default function Home() {
             src={result.public_id}
             width={result.width}
             height={result.height}
-            alt={result.info.detection.captioning.data.caption}
+            alt={result.context.custom.alt}
           />
         ) : null}
       </section>
